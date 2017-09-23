@@ -1,3 +1,4 @@
+use nom;
 use nom::*;
 use std::str;
 
@@ -8,7 +9,12 @@ named_args!(take_c_str(count: usize)<&str>,
     map_res!(flat_map!(take!(count), take_until!(&[0][..])), str::from_utf8)
 );
 
-named!(magic<()>, do_parse!(tag!("HLDEMO") >> take!(2) >> ()));
+named!(magic<()>,
+    add_return_error!(
+        nom::ErrorKind::Custom(0),
+        do_parse!(tag!("HLDEMO") >> take!(2) >> ())
+    )
+);
 
 named!(
     header<Header>,

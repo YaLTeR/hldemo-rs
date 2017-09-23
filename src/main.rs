@@ -24,8 +24,21 @@ fn run() -> Result<()> {
     let bytes = unsafe { mmap.as_slice() };
 
     let demo = parser::demo(bytes).to_full_result()
-                                  .map_err(|_| "couldn't parse the demo")?;
+        .map_err(|err| {
+            match err {
+                nom::IError::Error(e) => format!("couldn't parse the demo: {}", nom_error_string(&e)),
+                nom::IError::Incomplete(nom::Needed::Size(s)) => format!("couldn't parse the demo: need {} more bytes", s),
+                nom::IError::Incomplete(nom::Needed::Unknown) => format!("couldn't parse the demo: need more bytes")
+            }
+        })?;
     println!("{:#?}", demo);
 
     Ok(())
+}
+
+fn nom_error_string(err: &nom::ErrorKind) -> &'static str {
+    match nom::error_to_u32(err) {
+        0 => "the magic value didn't match",
+        _ => "unknown error"
+    }
 }
