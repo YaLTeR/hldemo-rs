@@ -25,7 +25,7 @@ fn run() -> Result<()> {
     let mmap = Mmap::open_path(filename, Protection::Read).chain_err(|| "couldn't mmap the file")?;
     let bytes = unsafe { mmap.as_slice() };
 
-    let demo = parser::demo(bytes).to_full_result()
+    let demo = parser::demo_without_frames(bytes).to_full_result()
         .map_err(|err| {
             match err {
                 nom::IError::Error(e) => format!("couldn't parse the demo: {}", nom_error_string(&e)),
@@ -34,6 +34,16 @@ fn run() -> Result<()> {
             }
         })?;
     println!("{:#?}", demo);
+
+    let _demo = parser::demo(bytes).to_full_result()
+        .map_err(|err| {
+            match err {
+                nom::IError::Error(e) => format!("couldn't parse the demo: {}", nom_error_string(&e)),
+                nom::IError::Incomplete(nom::Needed::Size(s)) => format!("couldn't parse the demo: need {} more bytes", s),
+                nom::IError::Incomplete(nom::Needed::Unknown) => format!("couldn't parse the demo: need more bytes")
+            }
+        })?;
+    println!("Parsed.");
 
     Ok(())
 }

@@ -29,6 +29,8 @@ pub struct DirectoryEntry<'a> {
     pub frame_count: i32,
     pub offset: i32,
     pub file_length: i32,
+
+    pub frames: Vec<Frame<'a>>,
 }
 
 #[derive(Debug)]

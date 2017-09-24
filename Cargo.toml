@@ -3,6 +3,9 @@ name = "demo-parser"
 version = "0.1.0"
 authors = ["Ivan Molodetskikh <yalterz@gmail.com>"]
 
+[profile.release]
+lto = true
+
 [dependencies]
 error-chain = "0.11"
 memmap = "0.5"

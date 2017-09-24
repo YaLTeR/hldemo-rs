@@ -102,6 +102,7 @@ named!(
                 frame_count,
                 offset,
                 file_length,
+                frames: Vec::new(),
             }
         )
     )
@@ -115,28 +116,78 @@ named_args!(offset_directory(offset: usize)<Directory>,
     )
 );
 
-named!(frame<Frame>,
+fn offset_directory_with_frames(input: &[u8], offset: usize) -> IResult<&[u8], Directory> {
+    match offset_directory(input, offset) {
+        IResult::Done(_, mut directory) => {
+            for entry in &mut directory.entries {
+                entry.frames = match offset_frames(input, entry.offset as usize) {
+                    IResult::Done(_, frames) => frames,
+                    IResult::Incomplete(needed) => return IResult::Incomplete(needed),
+                    IResult::Error(error) => return IResult::Error(error),
+                };
+            }
+
+            IResult::Done(input, directory)
+        },
+        other => other
+    }
+}
+
+named!(frames<Vec<Frame>>,
+    map!(dbg!(many_till!(frame_not_next_section, frame_next_section)),
+         |(mut fs, f)| {
+             fs.push(f);
+             fs
+         })
+);
+
+named_args!(offset_frames(offset: usize)<Vec<Frame>>,
+    do_parse!(
+        take!(offset)  >>
+        frames: frames >>
+        (frames)
+    )
+);
+
+named!(frame_header<(u8, f32, i32)>,
     do_parse!(
         frame_type: be_u8 >>
         time: le_f32 >>
         frame: le_i32 >>
-        data: call!(frame_data, frame_type) >>
+        (frame_type, time, frame)
+    )
+);
+
+named!(frame_next_section<Frame>,
+    map_res!(frame_header, |(frame_type, time, frame)| {
+        if frame_type == 5 {
+            Ok(Frame { time, frame, data: FrameData::NextSection })
+        } else {
+            Err(())
+        }
+    })
+);
+
+named!(frame_not_next_section<Frame>,
+    do_parse!(
+        frame_header: frame_header >>
+        data: call!(frame_data_not_next_section, frame_header.0) >>
         (
             Frame {
-                time,
-                frame,
+                time: frame_header.1,
+                frame: frame_header.2,
                 data
             }
         )
     )
 );
 
-fn frame_data(input: &[u8], frame_type: u8) -> IResult<&[u8], FrameData> {
+fn frame_data_not_next_section(input: &[u8], frame_type: u8) -> IResult<&[u8], FrameData> {
     match frame_type {
         2 => IResult::Done(input, FrameData::DemoStart),
         3 => console_command_data(input),
         4 => client_data_data(input),
-        5 => IResult::Done(input, FrameData::NextSection),
+        5 => IResult::Error(nom::ErrorKind::Custom(1)),
         6 => event_data(input),
         7 => weapon_anim_data(input),
         8 => sound_data(input),
@@ -498,10 +549,23 @@ named!(movevars<MoveVars>,
     )
 );
 
-named!(pub demo<Demo>,
+named!(pub demo_without_frames<Demo>,
     do_parse!(
         header:    peek!(header)                                             >>
         directory: call!(offset_directory, header.directory_offset as usize) >>
+        (
+            Demo {
+                header,
+                directory,
+            }
+        )
+    )
+);
+
+named!(pub demo<Demo>,
+    do_parse!(
+        header:    peek!(header)                                             >>
+        directory: call!(offset_directory_with_frames, header.directory_offset as usize) >>
         (
             Demo {
                 header,
