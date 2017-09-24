@@ -1,16 +1,22 @@
 [package]
-name = "demo-parser"
+name = "hldemo"
 version = "0.1.0"
 authors = ["Ivan Molodetskikh <yalterz@gmail.com>"]
+description = "A parser for Half-Life (Goldsource) demo files using nom."
 
-[profile.release]
-lto = true
+readme = "README.md"
+documentation = "https://docs.rs/hldemo"
+repository = "https://github.com/YaLTeR/hldemo"
+keywords = ["half-life", "goldsource", "demo", "nom", "parser"]
+categories = ["game-engines", "games", "parser-implementations", "parsing"]
 
 [dependencies]
-error-chain = "0.11"
-memmap = "0.5"
 quick-error = "1"
 
 [dependencies.nom]
 version = "3.2"
 features = ["verbose-errors"]
+
+[dev-dependencies]
+error-chain = "0.11"
+memmap = "0.5"
