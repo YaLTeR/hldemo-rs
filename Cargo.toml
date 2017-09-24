@@ -9,4 +9,8 @@ lto = true
 [dependencies]
 error-chain = "0.11"
 memmap = "0.5"
-nom = "3.2"
+quick-error = "1"
+
+[dependencies.nom]
+version = "3.2"
+features = ["verbose-errors"]

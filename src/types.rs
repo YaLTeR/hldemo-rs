@@ -55,7 +55,7 @@ pub enum FrameData<'a> {
 
 #[derive(Debug)]
 pub struct ConsoleCommandData<'a> {
-    pub command: &'a str
+    pub command: &'a str,
 }
 
 #[derive(Debug)]
