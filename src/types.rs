@@ -8,8 +8,8 @@ pub struct Demo<'a> {
 pub struct Header<'a> {
     pub demo_protocol: i32,
     pub net_protocol: i32,
-    pub map_name: &'a str,
-    pub game_dir: &'a str,
+    pub map_name: &'a [u8],
+    pub game_dir: &'a [u8],
     pub map_crc: i32,
     pub directory_offset: i32,
 }
@@ -22,7 +22,7 @@ pub struct Directory<'a> {
 #[derive(Debug)]
 pub struct DirectoryEntry<'a> {
     pub entry_type: i32,
-    pub description: &'a str,
+    pub description: &'a [u8],
     pub flags: i32,
     pub cd_track: i32,
     pub track_time: f32,
@@ -55,7 +55,7 @@ pub enum FrameData<'a> {
 
 #[derive(Debug)]
 pub struct ConsoleCommandData<'a> {
-    pub command: &'a str,
+    pub command: &'a [u8],
 }
 
 #[derive(Debug)]
@@ -206,7 +206,7 @@ pub struct MoveVars<'a> {
     pub zmax: f32,
     pub wave_height: f32,
     pub footsteps: i32,
-    pub sky_name: &'a str,
+    pub sky_name: &'a [u8],
     pub rollangle: f32,
     pub rollspeed: f32,
     pub skycolor_r: f32,

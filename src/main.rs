@@ -16,23 +16,12 @@ use errors::*;
 mod errors {
     error_chain! {
         foreign_links {
-            ParseError(ParseError);
-        }
-    }
-
-    quick_error! {
-        #[derive(Debug, Clone)]
-        pub enum ParseError {
-            Header {}
-            Directory {}
-            Frames {}
-            InvalidMagic {}
-            InvalidDemoProtocol {}
+            ParseError(::parse::Error);
         }
     }
 }
 
-mod parser;
+mod parse;
 mod types;
 
 quick_main!(run);
@@ -42,15 +31,16 @@ fn run() -> Result<()> {
     let mmap = Mmap::open_path(filename, Protection::Read).chain_err(|| "couldn't mmap the file")?;
     let bytes = unsafe { mmap.as_slice() };
 
-    let _demo = parser::demo(bytes).to_full_result()
-                                   .map_err(nom_error)
-                                   .chain_err(|| "couldn't parse the demo")?;
+    let demo = parse::demo(bytes).to_full_result()
+                                 .map_err(nom_error)
+                                 .chain_err(|| "couldn't parse the demo")?;
+    // println!("{:#?}", demo);
     println!("Parsed.");
 
     Ok(())
 }
 
-fn nom_error<I>(err: nom::IError<I, ParseError>) -> Error {
+fn nom_error<I>(err: nom::IError<I, parse::Error>) -> Error {
     match err {
         nom::IError::Incomplete(nom::Needed::Size(count)) => {
             format!("need {} more bytes", count).into()
@@ -60,7 +50,7 @@ fn nom_error<I>(err: nom::IError<I, ParseError>) -> Error {
     }
 }
 
-fn nom_error_list<I>(err: &nom::Err<I, ParseError>) -> Error {
+fn nom_error_list<I>(err: &nom::Err<I, parse::Error>) -> Error {
     let v = nom::error_to_list(err);
     let mut iter = v.into_iter()
                     .rev()
