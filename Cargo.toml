@@ -11,6 +11,10 @@ repository = "https://github.com/YaLTeR/hldemo-rs"
 keywords = ["half-life", "goldsource", "demo", "nom", "parser"]
 categories = ["game-engines", "games", "parser-implementations", "parsing"]
 
+[badges]
+travis-ci = { repository = "YaLTeR/hldemo-rs" }
+appveyor = { repository = "YaLTeR/hldemo-rs" }
+
 [dependencies]
 error-chain = "0.11"
 quick-error = "1"
