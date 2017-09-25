@@ -12,6 +12,7 @@ keywords = ["half-life", "goldsource", "demo", "nom", "parser"]
 categories = ["game-engines", "games", "parser-implementations", "parsing"]
 
 [dependencies]
+error-chain = "0.11"
 quick-error = "1"
 
 [dependencies.nom]
@@ -19,5 +20,4 @@ version = "3.2"
 features = ["verbose-errors"]
 
 [dev-dependencies]
-error-chain = "0.11"
 memmap = "0.5"

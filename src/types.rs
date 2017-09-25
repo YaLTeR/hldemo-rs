@@ -1,7 +1,78 @@
+//! Types for objects which demos consist of.
+
+use errors::*;
+use parse;
+
+/// A Goldsource demo.
 #[derive(Debug, PartialEq)]
 pub struct Demo<'a> {
     pub header: Header<'a>,
     pub directory: Directory<'a>,
+}
+
+impl<'a> Demo<'a> {
+    /// Parses a demo.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use std::error::Error;
+    /// #
+    /// # fn try_main() -> Result<(), Box<Error>> {
+    /// extern crate hldemo;
+    ///
+    /// use std::fs::File;
+    /// use std::io::Read;
+    ///
+    /// let mut bytes = Vec::new();
+    /// let mut f = File::open("demo.dem")?;
+    /// f.read_to_end(&mut bytes);
+    ///
+    /// let demo = hldemo::Demo::parse(&bytes)?;
+    /// #
+    /// #     Ok(())
+    /// # }
+    /// #
+    /// # fn main() {
+    /// #     try_main().unwrap();
+    /// # }
+    /// ```
+    pub fn parse(input: &[u8]) -> Result<Demo> {
+        iresult_into_result(parse::demo(input))
+    }
+
+    /// Parses a demo's header and directory, without parsing frame data.
+    ///
+    /// Parsing frames usually takes a long time, so this function can be used when the frame data
+    /// isn't needed.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use std::error::Error;
+    /// #
+    /// # fn try_main() -> Result<(), Box<Error>> {
+    /// extern crate hldemo;
+    ///
+    /// use std::fs::File;
+    /// use std::io::Read;
+    ///
+    /// let mut bytes = Vec::new();
+    /// let mut f = File::open("demo.dem")?;
+    /// f.read_to_end(&mut bytes);
+    ///
+    /// let demo = hldemo::Demo::parse_without_frames(&bytes)?;
+    /// #
+    /// #     Ok(())
+    /// # }
+    /// #
+    /// # fn main() {
+    /// #     try_main().unwrap();
+    /// # }
+    /// ```
+    pub fn parse_without_frames(input: &[u8]) -> Result<Demo> {
+        iresult_into_result(parse::demo_without_frames(input))
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]

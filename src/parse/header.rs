@@ -1,10 +1,12 @@
+//! Demo header parsing functions.
+
 use nom::*;
 
 use super::*;
 use types::*;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-named!(magic<&[u8], (), Error>,
+named!(pub magic<&[u8], (), Error>,
     add_parse_error!(InvalidMagic,
         fix_error!(Error, do_parse!(tag!("HLDEMO") >> take!(2) >> ()))
     )
@@ -20,7 +22,7 @@ fn check_demo_protocol(protocol: i32) -> IResult<i32, i32, Error> {
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-named!(demo_protocol<&[u8], i32, Error>,
+named!(pub demo_protocol<&[u8], i32, Error>,
     flat_map!(fix_error!(Error, le_i32), check_demo_protocol)
 );
 

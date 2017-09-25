@@ -1,3 +1,5 @@
+//! Demo directory parsing functions.
+
 use nom::*;
 
 use super::*;
@@ -5,7 +7,7 @@ use super::frame::*;
 use types::*;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-named!(entry<DirectoryEntry>,
+named!(pub entry<DirectoryEntry>,
     do_parse!(
         entry_type:  le_i32    >>
         description: take!(64) >>
@@ -44,7 +46,7 @@ fn check_count(count: i32) -> IResult<usize, usize, Error> {
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-named!(directory<&[u8], Directory, Error>,
+named!(pub directory<&[u8], Directory, Error>,
     add_parse_error!(Directory,
         do_parse!(
             // Can't use length_count!() here because it doesn't work with custom error types.

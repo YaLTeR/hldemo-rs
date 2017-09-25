@@ -1,21 +1,14 @@
 #[macro_use]
 extern crate error_chain;
-extern crate memmap;
-extern crate nom;
-
 extern crate hldemo;
+extern crate memmap;
 
 use memmap::{Mmap, Protection};
 use std::env;
 
 mod errors {
-    error_chain! {
-        foreign_links {
-            ParseError(::hldemo::parse::Error);
-        }
-    }
+    error_chain!{}
 }
-
 use errors::*;
 
 quick_main!(run);
@@ -27,9 +20,7 @@ fn run() -> Result<()> {
 
     // Parse the demo without frames. This is nearly instant, compared to full parsing which can
     // take a long time.
-    let demo = hldemo::parse::demo_without_frames(bytes).to_full_result()
-                                                        .map_err(nom_error)
-                                                        .chain_err(|| "couldn't parse the demo")?;
+    let demo = hldemo::Demo::parse_without_frames(bytes).chain_err(|| "couldn't parse the demo")?;
     print_demo(&demo);
 
     Ok(())
@@ -71,32 +62,4 @@ fn print_entry(entry: &hldemo::DirectoryEntry) {
     println!("\t\tFrame count: {}", entry.frame_count);
     println!("\t\tOffset: {}", entry.offset);
     println!("\t\tLength: {}", entry.file_length);
-}
-
-fn nom_error<I>(err: nom::IError<I, hldemo::parse::Error>) -> Error {
-    match err {
-        nom::IError::Incomplete(nom::Needed::Size(count)) => {
-            format!("need {} more bytes", count).into()
-        }
-        nom::IError::Incomplete(nom::Needed::Unknown) => "need more bytes".into(),
-        nom::IError::Error(err) => nom_error_list(&err),
-    }
-}
-
-fn nom_error_list<I>(err: &nom::Err<I, hldemo::parse::Error>) -> Error {
-    let v = nom::error_to_list(err);
-    let mut iter = v.into_iter()
-                    .rev()
-                    .filter_map(|x| if let nom::ErrorKind::Custom(inner) = x {
-                                    Some(inner)
-                                } else {
-                                    None
-                                });
-    let mut err = Error::from(iter.next().unwrap());
-
-    for e in iter {
-        err = Error::with_chain(err, Error::from(e));
-    }
-
-    err
 }

@@ -1,15 +1,17 @@
+//! Demo frame parsing functions.
+
 use nom::*;
 
 use super::*;
 use types::*;
 
-mod console_command;
-mod client_data;
-mod demo_buffer;
-mod event;
-mod netmsg;
-mod sound;
-mod weapon_anim;
+pub mod console_command;
+pub mod client_data;
+pub mod demo_buffer;
+pub mod event;
+pub mod netmsg;
+pub mod sound;
+pub mod weapon_anim;
 
 use self::console_command::*;
 use self::client_data::*;
@@ -19,8 +21,9 @@ use self::netmsg::*;
 use self::sound::*;
 use self::weapon_anim::*;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum FrameType {
+/// An enum containing the possible frame types.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FrameType {
     DemoStart,
     ConsoleCommand,
     ClientData,
@@ -48,14 +51,17 @@ impl From<u8> for FrameType {
     }
 }
 
-struct FrameHeader {
-    frame_type: FrameType,
-    time: f32,
-    frame: i32,
+/// A demo frame header.
+///
+/// Every frame starts with a header, followed by frame data depending on the frame type.
+pub struct FrameHeader {
+    pub frame_type: FrameType,
+    pub time: f32,
+    pub frame: i32,
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-named!(frame_header<FrameHeader>,
+named!(pub frame_header<FrameHeader>,
     do_parse!(
         frame_type: map!(be_u8, From::from) >>
         time:       le_f32                  >>
@@ -71,7 +77,7 @@ named!(frame_header<FrameHeader>,
 );
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-named!(frame_next_section<Frame>,
+named!(pub frame_next_section<Frame>,
     map_res!(frame_header, |FrameHeader { frame_type, time, frame }| {
         if frame_type == FrameType::NextSection {
             Ok(Frame {
@@ -86,7 +92,7 @@ named!(frame_next_section<Frame>,
 );
 
 #[inline]
-fn frame_data(input: &[u8], frame_type: FrameType) -> IResult<&[u8], FrameData> {
+pub fn frame_data(input: &[u8], frame_type: FrameType) -> IResult<&[u8], FrameData> {
     match frame_type {
         FrameType::DemoStart => IResult::Done(input, FrameData::DemoStart),
         FrameType::ConsoleCommand => console_command_data(input),
@@ -101,7 +107,7 @@ fn frame_data(input: &[u8], frame_type: FrameType) -> IResult<&[u8], FrameData> 
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-named!(frame<Frame>,
+named!(pub frame<Frame>,
     do_parse!(
         frame_header: frame_header                               >>
         data:         call!(frame_data, frame_header.frame_type) >>
@@ -116,7 +122,7 @@ named!(frame<Frame>,
 );
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-named!(frames<&[u8], Vec<Frame>, Error>,
+named!(pub frames<&[u8], Vec<Frame>, Error>,
     add_parse_error!(Frames,
         fix_error!(Error,
                    map!(many_till!(frame, frame_next_section),

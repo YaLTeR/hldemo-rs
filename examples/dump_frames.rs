@@ -1,21 +1,14 @@
 #[macro_use]
 extern crate error_chain;
-extern crate memmap;
-extern crate nom;
-
 extern crate hldemo;
+extern crate memmap;
 
 use memmap::{Mmap, Protection};
 use std::env;
 
 mod errors {
-    error_chain! {
-        foreign_links {
-            ParseError(::hldemo::parse::Error);
-        }
-    }
+    error_chain!{}
 }
-
 use errors::*;
 
 quick_main!(run);
@@ -25,9 +18,7 @@ fn run() -> Result<()> {
     let mmap = Mmap::open_path(filename, Protection::Read).chain_err(|| "couldn't mmap the file")?;
     let bytes = unsafe { mmap.as_slice() };
 
-    let demo = hldemo::parse::demo(bytes).to_full_result()
-                                         .map_err(nom_error)
-                                         .chain_err(|| "couldn't parse the demo")?;
+    let demo = hldemo::Demo::parse(bytes).chain_err(|| "couldn't parse the demo")?;
     print_frames(&demo);
 
     Ok(())
@@ -77,32 +68,4 @@ fn frame_extra_info(data: &hldemo::FrameData) -> String {
         hldemo::FrameData::NetMsg(ref d) => format!(" size={}", d.msg.len()),
         _ => "".to_string(),
     }
-}
-
-fn nom_error<I>(err: nom::IError<I, hldemo::parse::Error>) -> Error {
-    match err {
-        nom::IError::Incomplete(nom::Needed::Size(count)) => {
-            format!("need {} more bytes", count).into()
-        }
-        nom::IError::Incomplete(nom::Needed::Unknown) => "need more bytes".into(),
-        nom::IError::Error(err) => nom_error_list(&err),
-    }
-}
-
-fn nom_error_list<I>(err: &nom::Err<I, hldemo::parse::Error>) -> Error {
-    let v = nom::error_to_list(err);
-    let mut iter = v.into_iter()
-                    .rev()
-                    .filter_map(|x| if let nom::ErrorKind::Custom(inner) = x {
-                                    Some(inner)
-                                } else {
-                                    None
-                                });
-    let mut err = Error::from(iter.next().unwrap());
-
-    for e in iter {
-        err = Error::with_chain(err, Error::from(e));
-    }
-
-    err
 }

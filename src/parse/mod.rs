@@ -1,13 +1,13 @@
-//! Functions for parsing demos.
+//! Nom parsing functions for demo parsing.
 
 use nom::*;
 
 #[macro_use]
 mod macros;
 mod demo;
-mod directory;
-mod frame;
-mod header;
+pub mod directory;
+pub mod frame;
+pub mod header;
 
 pub use self::demo::{demo, demo_without_frames};
 
