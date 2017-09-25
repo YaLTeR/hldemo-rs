@@ -1,10 +1,10 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Demo<'a> {
     pub header: Header<'a>,
     pub directory: Directory<'a>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Header<'a> {
     pub demo_protocol: i32,
     pub net_protocol: i32,
@@ -14,12 +14,12 @@ pub struct Header<'a> {
     pub directory_offset: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Directory<'a> {
     pub entries: Vec<DirectoryEntry<'a>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct DirectoryEntry<'a> {
     pub entry_type: i32,
     pub description: &'a [u8],
@@ -33,14 +33,14 @@ pub struct DirectoryEntry<'a> {
     pub frames: Vec<Frame<'a>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Frame<'a> {
     pub time: f32,
     pub frame: i32,
     pub data: FrameData<'a>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum FrameData<'a> {
     DemoStart,
     ConsoleCommand(ConsoleCommandData<'a>),
@@ -53,12 +53,12 @@ pub enum FrameData<'a> {
     NetMsg(NetMsgData<'a>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ConsoleCommandData<'a> {
     pub command: &'a [u8],
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct ClientDataData {
     pub origin: [f32; 3],
     pub viewangles: [f32; 3],
@@ -66,7 +66,7 @@ pub struct ClientDataData {
     pub fov: f32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct EventData {
     pub flags: i32,
     pub index: i32,
@@ -74,7 +74,7 @@ pub struct EventData {
     pub args: EventArgs,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct EventArgs {
     pub flags: i32,
     pub entity_index: i32,
@@ -90,13 +90,13 @@ pub struct EventArgs {
     pub bparam2: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct WeaponAnimData {
     pub anim: i32,
     pub body: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct SoundData<'a> {
     pub channel: i32,
     pub sample: &'a [u8],
@@ -106,12 +106,12 @@ pub struct SoundData<'a> {
     pub pitch: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct DemoBufferData<'a> {
     pub buffer: &'a [u8],
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct NetMsgData<'a> {
     pub info: NetMsgInfo<'a>,
     pub incoming_sequence: i32,
@@ -124,7 +124,7 @@ pub struct NetMsgData<'a> {
     pub msg: &'a [u8],
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct NetMsgInfo<'a> {
     pub timestamp: f32,
     pub ref_params: RefParams,
@@ -134,7 +134,7 @@ pub struct NetMsgInfo<'a> {
     pub viewmodel: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct RefParams {
     pub vieworg: [f32; 3],
     pub viewangles: [f32; 3],
@@ -171,7 +171,7 @@ pub struct RefParams {
     pub only_client_draw: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct UserCmd {
     pub lerp_msec: i16,
     pub msec: u8,
@@ -187,7 +187,7 @@ pub struct UserCmd {
     pub impact_position: [f32; 3],
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct MoveVars<'a> {
     pub gravity: f32,
     pub stopspeed: f32,

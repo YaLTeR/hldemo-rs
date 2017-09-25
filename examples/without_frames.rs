@@ -61,7 +61,8 @@ fn print_directory(directory: &hldemo::Directory) {
 fn print_entry(entry: &hldemo::DirectoryEntry) {
     println!("\tEntry:");
     println!("\t\tType: {}", entry.entry_type);
-    println!("\t\tDescription: {}", String::from_utf8_lossy(entry.description));
+    println!("\t\tDescription: {}",
+             String::from_utf8_lossy(entry.description));
     println!("\t\tFlags: {}", entry.flags);
     println!("\t\tCD track: {}", entry.cd_track);
     println!("\t\tTime: {}", entry.track_time);
@@ -75,7 +76,7 @@ fn nom_error<I>(err: nom::IError<I, hldemo::parse::Error>) -> Error {
         nom::IError::Incomplete(nom::Needed::Size(count)) => {
             format!("need {} more bytes", count).into()
         }
-        nom::IError::Incomplete(nom::Needed::Unknown) => format!("need more bytes").into(),
+        nom::IError::Incomplete(nom::Needed::Unknown) => "need more bytes".into(),
         nom::IError::Error(err) => nom_error_list(&err),
     }
 }
