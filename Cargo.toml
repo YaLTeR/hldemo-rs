@@ -7,7 +7,7 @@ license = "MIT/Apache-2.0"
 
 readme = "README.md"
 documentation = "https://docs.rs/hldemo"
-repository = "https://github.com/YaLTeR/hldemo"
+repository = "https://github.com/YaLTeR/hldemo-rs"
 keywords = ["half-life", "goldsource", "demo", "nom", "parser"]
 categories = ["game-engines", "games", "parser-implementations", "parsing"]
 
