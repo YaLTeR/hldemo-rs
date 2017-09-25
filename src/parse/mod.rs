@@ -1,3 +1,5 @@
+//! Functions for parsing demos.
+
 use nom::*;
 
 #[macro_use]
@@ -10,7 +12,8 @@ mod header;
 pub use self::demo::{demo, demo_without_frames};
 
 quick_error! {
-    #[derive(Debug, Clone)]
+    /// This type represents possible errors that can occur when parsing demos.
+    #[derive(Debug, Clone, Eq, PartialEq, Hash)]
     pub enum Error {
         Header {
             display("couldn't parse the demo header")
