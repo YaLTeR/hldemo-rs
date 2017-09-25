@@ -45,8 +45,10 @@ fn print_header(header: &hldemo::Header) {
     println!("Header:");
     println!("\tDemo protocol: {}", header.demo_protocol);
     println!("\tNet protocol: {}", header.net_protocol);
-    println!("\tMap name: {}", String::from_utf8_lossy(header.map_name));
-    println!("\tGame dir: {}", String::from_utf8_lossy(header.game_dir));
+    println!("\tMap name: {}",
+             String::from_utf8_lossy(header.map_name.split(|&x| x == 0).next().unwrap()));
+    println!("\tGame dir: {}",
+             String::from_utf8_lossy(header.game_dir.split(|&x| x == 0).next().unwrap()));
     println!("\tMap CRC: {}", header.map_crc);
     println!("\tDirectory offset: {}", header.directory_offset);
 }
@@ -62,7 +64,7 @@ fn print_entry(entry: &hldemo::DirectoryEntry) {
     println!("\tEntry:");
     println!("\t\tType: {}", entry.entry_type);
     println!("\t\tDescription: {}",
-             String::from_utf8_lossy(entry.description));
+             String::from_utf8_lossy(entry.description.split(|&x| x == 0).next().unwrap()));
     println!("\t\tFlags: {}", entry.flags);
     println!("\t\tCD track: {}", entry.cd_track);
     println!("\t\tTime: {}", entry.track_time);
