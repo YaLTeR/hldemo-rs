@@ -74,21 +74,53 @@ fn frame_types() {
     let demo = Demo::parse(bytes).unwrap();
     let frames = &demo.directory.entries[0].frames;
 
-    assert!(if let FrameData::NetMsg(_) = frames[0].data { true } else { false });
-    assert!(if let FrameData::DemoStart = frames[1].data { true } else { false });
+    assert!(if let FrameData::NetMsg(_) = frames[0].data {
+                true
+            } else {
+                false
+            });
+    assert!(if let FrameData::DemoStart = frames[1].data {
+                true
+            } else {
+                false
+            });
 
     let mut command = [0; 64];
     command[..11].copy_from_slice(b"hello world");
     assert!(if let FrameData::ConsoleCommand(ConsoleCommandData { command: c }) = frames[2].data {
-        c == &command[..]
-    } else {
-        false
-    });
+                c == &command[..]
+            } else {
+                false
+            });
 
-    assert!(if let FrameData::ClientData(_) = frames[3].data { true } else { false });
-    assert!(if let FrameData::Event(_) = frames[4].data { true } else { false });
-    assert!(if let FrameData::WeaponAnim(_) = frames[5].data { true } else { false });
-    assert!(if let FrameData::Sound(_) = frames[6].data { true } else { false });
-    assert!(if let FrameData::DemoBuffer(_) = frames[7].data { true } else { false });
-    assert!(if let FrameData::NextSection = frames[8].data { true } else { false });
+    assert!(if let FrameData::ClientData(_) = frames[3].data {
+                true
+            } else {
+                false
+            });
+    assert!(if let FrameData::Event(_) = frames[4].data {
+                true
+            } else {
+                false
+            });
+    assert!(if let FrameData::WeaponAnim(_) = frames[5].data {
+                true
+            } else {
+                false
+            });
+    assert!(if let FrameData::Sound(_) = frames[6].data {
+                true
+            } else {
+                false
+            });
+    assert!(if let FrameData::DemoBuffer(_) = frames[7].data {
+                true
+            } else {
+                false
+            });
+    assert!(if let FrameData::NextSection = frames[8].data {
+                true
+            } else {
+                false
+            });
 }
