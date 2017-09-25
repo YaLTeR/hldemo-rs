@@ -46,4 +46,7 @@ pub mod errors;
 pub mod parse;
 mod types;
 
+#[cfg(test)]
+mod tests;
+
 pub use types::*;
