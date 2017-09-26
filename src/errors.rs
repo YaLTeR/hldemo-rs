@@ -50,6 +50,11 @@ impl<I> From<IError<I, parse::Error>> for Error {
 
 /// Converts `nom::IResult<I, O, parse::Error>` into a `Result<O>`, preserving the parse error
 /// chain.
+///
+/// # Panics
+///
+/// Panics if `result` is an `IError` and there's no `nom::ErrorKind::Custom(parse::Error)` in its
+/// error chain.
 // Can't have this as a From due to orphan rules.
 pub fn iresult_into_result<I, O>(result: IResult<I, O, parse::Error>) -> Result<O> {
     result.to_full_result().map_err(|err| err.into())
