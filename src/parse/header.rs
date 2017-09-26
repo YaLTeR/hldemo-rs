@@ -5,6 +5,8 @@ use nom::*;
 use super::*;
 use types::*;
 
+pub const SUPPORTED_DEMO_PROTOCOL: i32 = 5;
+
 #[cfg_attr(rustfmt, rustfmt_skip)]
 named!(pub magic<&[u8], (), Error>,
     add_parse_error!(InvalidMagic,
@@ -14,7 +16,7 @@ named!(pub magic<&[u8], (), Error>,
 
 #[inline]
 fn check_demo_protocol(protocol: i32) -> IResult<i32, i32, Error> {
-    if protocol == 5 {
+    if protocol == SUPPORTED_DEMO_PROTOCOL {
         IResult::Done(protocol, protocol)
     } else {
         IResult::Error(error_code!(ErrorKind::Custom(Error::InvalidDemoProtocol(protocol))))

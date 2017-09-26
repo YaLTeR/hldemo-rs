@@ -28,10 +28,21 @@ quick_error! {
             display("invalid magic value")
         }
         InvalidDemoProtocol(protocol: i32) {
-            display("invalid demo protocol: {} (only protocol 5 is supported)", protocol)
+            display("invalid demo protocol: {} (only protocol {} is supported)",
+                    protocol,
+                    header::SUPPORTED_DEMO_PROTOCOL)
         }
         InvalidDirectoryEntryCount(count: i32) {
-            display("invalid directory entry count: {} (expected from 1 to 1024)", count)
+            display("invalid directory entry count: {} (expected from {} to {})",
+                    count,
+                    directory::MIN_ENTRY_COUNT,
+                    directory::MAX_ENTRY_COUNT)
+        }
+        InvalidNetMsgLength(length: i32) {
+            display("invalid netmsg length: {} (expected from {} to {})",
+                    length,
+                    frame::netmsg::MIN_MESSAGE_LENGTH,
+                    frame::netmsg::MAX_MESSAGE_LENGTH)
         }
     }
 }

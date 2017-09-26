@@ -6,6 +6,9 @@ use super::*;
 use super::frame::*;
 use types::*;
 
+pub const MIN_ENTRY_COUNT: i32 = 1;
+pub const MAX_ENTRY_COUNT: i32 = 1024;
+
 #[cfg_attr(rustfmt, rustfmt_skip)]
 named!(pub entry<DirectoryEntry>,
     do_parse!(
@@ -35,10 +38,7 @@ named!(pub entry<DirectoryEntry>,
 
 #[inline]
 fn check_count(count: i32) -> IResult<usize, usize, Error> {
-    const MIN_DIR_ENTRY_COUNT: i32 = 1;
-    const MAX_DIR_ENTRY_COUNT: i32 = 1024;
-
-    if count < MIN_DIR_ENTRY_COUNT || count > MAX_DIR_ENTRY_COUNT {
+    if count < MIN_ENTRY_COUNT || count > MAX_ENTRY_COUNT {
         IResult::Error(error_code!(ErrorKind::Custom(Error::InvalidDirectoryEntryCount(count))))
     } else {
         IResult::Done(count as usize, count as usize)

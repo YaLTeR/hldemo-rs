@@ -92,24 +92,24 @@ named!(pub frame_next_section<Frame>,
 );
 
 #[inline]
-pub fn frame_data(input: &[u8], frame_type: FrameType) -> IResult<&[u8], FrameData> {
+pub fn frame_data(input: &[u8], frame_type: FrameType) -> IResult<&[u8], FrameData, Error> {
     match frame_type {
         FrameType::DemoStart => IResult::Done(input, FrameData::DemoStart),
-        FrameType::ConsoleCommand => console_command_data(input),
-        FrameType::ClientData => client_data_data(input),
+        FrameType::ConsoleCommand => fix_error!(input, Error, console_command_data),
+        FrameType::ClientData => fix_error!(input, Error, client_data_data),
         FrameType::NextSection => IResult::Done(input, FrameData::NextSection),
-        FrameType::Event => event_data(input),
-        FrameType::WeaponAnim => weapon_anim_data(input),
-        FrameType::Sound => sound_data(input),
-        FrameType::DemoBuffer => demo_buffer_data(input),
+        FrameType::Event => fix_error!(input, Error, event_data),
+        FrameType::WeaponAnim => fix_error!(input, Error, weapon_anim_data),
+        FrameType::Sound => fix_error!(input, Error, sound_data),
+        FrameType::DemoBuffer => fix_error!(input, Error, demo_buffer_data),
         FrameType::NetMsg => net_msg_data(input),
     }
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-named!(pub frame<Frame>,
+named!(pub frame<&[u8], Frame, Error>,
     do_parse!(
-        frame_header: frame_header                               >>
+        frame_header: fix_error!(Error, frame_header)            >>
         data:         call!(frame_data, frame_header.frame_type) >>
         (
             Frame {
@@ -124,13 +124,11 @@ named!(pub frame<Frame>,
 #[cfg_attr(rustfmt, rustfmt_skip)]
 named!(pub frames<&[u8], Vec<Frame>, Error>,
     add_parse_error!(Frames,
-        fix_error!(Error,
-                   map!(many_till!(frame, frame_next_section),
-                        |(mut fs, f)| {
-                            fs.push(f);
-                            fs
-                        })
-        )
+        map!(many_till!(frame, frame_next_section),
+             |(mut fs, f)| {
+                 fs.push(f);
+                 fs
+             })
     )
 );
 
