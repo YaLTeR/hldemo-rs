@@ -70,7 +70,7 @@ fn without_frames() {
 
 #[test]
 fn frame_types() {
-    let bytes = include_bytes!("../test-demos/frame_types.dem");
+    let bytes = include_bytes!("../test-demos/frame-types.dem");
     let demo = Demo::parse(bytes).unwrap();
     let frames = &demo.directory.entries[0].frames;
 
@@ -123,4 +123,56 @@ fn frame_types() {
             } else {
                 false
             });
+}
+
+#[test]
+fn error_invalid_magic() {
+    let bytes = include_bytes!("../test-demos/invalid-magic.dem");
+    let error = Demo::parse_without_frames(bytes).err().unwrap();
+    let mut error_iter = error.iter();
+
+    // Can't downcast errors. :(
+    assert_eq!(format!("{}", error_iter.next().unwrap()),
+               format!("{}", parse::Error::Header));
+    assert_eq!(format!("{}", error_iter.next().unwrap()),
+               format!("{}", parse::Error::InvalidMagic));
+}
+
+#[test]
+fn error_invalid_demo_protocol() {
+    let bytes = include_bytes!("../test-demos/invalid-demo-protocol.dem");
+    let error = Demo::parse_without_frames(bytes).err().unwrap();
+    let mut error_iter = error.iter();
+
+    // Can't downcast errors. :(
+    assert_eq!(format!("{}", error_iter.next().unwrap()),
+               format!("{}", parse::Error::Header));
+    assert_eq!(format!("{}", error_iter.next().unwrap()),
+               format!("{}", parse::Error::InvalidDemoProtocol(4)));
+}
+
+#[test]
+fn error_invalid_directory_entry_count() {
+    let bytes = include_bytes!("../test-demos/invalid-directory-entry-count.dem");
+    let error = Demo::parse_without_frames(bytes).err().unwrap();
+    let mut error_iter = error.iter();
+
+    // Can't downcast errors. :(
+    assert_eq!(format!("{}", error_iter.next().unwrap()),
+               format!("{}", parse::Error::Directory));
+    assert_eq!(format!("{}", error_iter.next().unwrap()),
+               format!("{}", parse::Error::InvalidDirectoryEntryCount(65535)));
+}
+
+#[test]
+fn error_invalid_netmsg_length() {
+    let bytes = include_bytes!("../test-demos/invalid-netmsg-length.dem");
+    let error = Demo::parse(bytes).err().unwrap();
+    let mut error_iter = error.iter();
+
+    // Can't downcast errors. :(
+    assert_eq!(format!("{}", error_iter.next().unwrap()),
+               format!("{}", parse::Error::Frames));
+    assert_eq!(format!("{}", error_iter.next().unwrap()),
+               format!("{}", parse::Error::InvalidNetMsgLength(16777215)));
 }
