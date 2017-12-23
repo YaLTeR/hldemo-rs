@@ -13,8 +13,8 @@ pub mod netmsg;
 pub mod sound;
 pub mod weapon_anim;
 
-use self::console_command::*;
 use self::client_data::*;
+use self::console_command::*;
 use self::demo_buffer::*;
 use self::event::*;
 use self::netmsg::*;

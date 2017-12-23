@@ -21,13 +21,13 @@ error_chain! {
 impl<I> From<nom::Err<I, parse::Error>> for Error {
     fn from(err: nom::Err<I, parse::Error>) -> Self {
         let v = error_to_list(&err);
-        let mut iter = v.into_iter()
-                        .rev()
-                        .filter_map(|x| if let nom::ErrorKind::Custom(inner) = x {
-                                        Some(inner)
-                                    } else {
-                                        None
-                                    });
+        let mut iter = v.into_iter().rev().filter_map(|x| {
+                                                          if let nom::ErrorKind::Custom(inner) = x {
+                                                              Some(inner)
+                                                          } else {
+                                                              None
+                                                          }
+                                                      });
 
         let mut err = Error::from(iter.next().unwrap());
         for parse_error in iter {
