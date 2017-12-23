@@ -24,4 +24,4 @@ version = "3.2"
 features = ["verbose-errors"]
 
 [dev-dependencies]
-memmap = "0.5"
+memmap = "0.6"

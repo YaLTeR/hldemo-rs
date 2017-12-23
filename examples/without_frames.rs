@@ -3,8 +3,9 @@ extern crate error_chain;
 extern crate hldemo;
 extern crate memmap;
 
-use memmap::{Mmap, Protection};
+use memmap::MmapOptions;
 use std::env;
+use std::fs::File;
 
 mod errors {
     error_chain!{}
@@ -15,12 +16,15 @@ quick_main!(run);
 
 fn run() -> Result<()> {
     let filename = env::args().nth(1).ok_or("no filename")?;
-    let mmap = Mmap::open_path(filename, Protection::Read).chain_err(|| "couldn't mmap the file")?;
-    let bytes = unsafe { mmap.as_slice() };
+    let file = File::open(filename).chain_err(|| "couldn't open the file")?;
+    let mmap = unsafe {
+        MmapOptions::new().map(&file)
+                          .chain_err(|| "couldn't mmap the file")?
+    };
 
     // Parse the demo without frames. This is nearly instant, compared to full parsing which can
     // take a long time.
-    let demo = hldemo::Demo::parse_without_frames(bytes).chain_err(|| "couldn't parse the demo")?;
+    let demo = hldemo::Demo::parse_without_frames(&mmap).chain_err(|| "couldn't parse the demo")?;
     print_demo(&demo);
 
     Ok(())

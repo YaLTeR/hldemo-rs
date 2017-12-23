@@ -3,8 +3,9 @@ extern crate error_chain;
 extern crate hldemo;
 extern crate memmap;
 
-use memmap::{Mmap, Protection};
+use memmap::MmapOptions;
 use std::env;
+use std::fs::File;
 
 mod errors {
     error_chain!{}
@@ -15,10 +16,13 @@ quick_main!(run);
 
 fn run() -> Result<()> {
     let filename = env::args().nth(1).ok_or("no filename")?;
-    let mmap = Mmap::open_path(filename, Protection::Read).chain_err(|| "couldn't mmap the file")?;
-    let bytes = unsafe { mmap.as_slice() };
+    let file = File::open(filename).chain_err(|| "coulnd't open the file")?;
+    let mmap = unsafe {
+        MmapOptions::new().map(&file)
+                          .chain_err(|| "couldn't mmap the file")?
+    };
 
-    let demo = hldemo::Demo::parse(bytes).chain_err(|| "couldn't parse the demo")?;
+    let demo = hldemo::Demo::parse(&mmap).chain_err(|| "couldn't parse the demo")?;
     print_frames(&demo);
 
     Ok(())
@@ -60,10 +64,8 @@ fn frame_type_string(data: &hldemo::FrameData) -> &'static str {
 
 fn frame_extra_info(data: &hldemo::FrameData) -> String {
     match *data {
-        hldemo::FrameData::ConsoleCommand(ref d) => {
-            format!(" command=`{}`",
-                    String::from_utf8_lossy(d.command.split(|&x| x == 0).next().unwrap()))
-        }
+        hldemo::FrameData::ConsoleCommand(ref d) => format!(" command=`{}`",
+                    String::from_utf8_lossy(d.command.split(|&x| x == 0).next().unwrap())),
         hldemo::FrameData::DemoBuffer(ref d) => format!(" size={}", d.buffer.len()),
         hldemo::FrameData::NetMsg(ref d) => format!(" size={}", d.msg.len()),
         _ => "".to_string(),
