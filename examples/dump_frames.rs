@@ -50,6 +50,8 @@ fn print_frame(frame: &hldemo::Frame) {
 
 fn frame_type_string(data: &hldemo::FrameData) -> &'static str {
     match *data {
+        hldemo::FrameData::NetMsgStart(_) => "NetMsgStart",
+        hldemo::FrameData::NetMsg(_) => "NetMsg",
         hldemo::FrameData::DemoStart => "DemoStart",
         hldemo::FrameData::ConsoleCommand(_) => "ConsoleCommand",
         hldemo::FrameData::ClientData(_) => "ClientData",
@@ -58,16 +60,19 @@ fn frame_type_string(data: &hldemo::FrameData) -> &'static str {
         hldemo::FrameData::WeaponAnim(_) => "WeaponAnim",
         hldemo::FrameData::Sound(_) => "Sound",
         hldemo::FrameData::DemoBuffer(_) => "DemoBuffer",
-        hldemo::FrameData::NetMsg(_) => "NetMsg",
     }
 }
 
 fn frame_extra_info(data: &hldemo::FrameData) -> String {
     match *data {
-        hldemo::FrameData::ConsoleCommand(ref d) => format!(" command=`{}`",
-                    String::from_utf8_lossy(d.command.split(|&x| x == 0).next().unwrap())),
+        hldemo::FrameData::ConsoleCommand(ref d) => {
+            format!(" command=`{}`",
+                    String::from_utf8_lossy(d.command.split(|&x| x == 0).next().unwrap()))
+        }
         hldemo::FrameData::DemoBuffer(ref d) => format!(" size={}", d.buffer.len()),
-        hldemo::FrameData::NetMsg(ref d) => format!(" size={}", d.msg.len()),
+        hldemo::FrameData::NetMsgStart(ref d) | hldemo::FrameData::NetMsg(ref d) => {
+            format!(" size={}", d.msg.len())
+        }
         _ => "".to_string(),
     }
 }

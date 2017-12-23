@@ -113,6 +113,8 @@ pub struct Frame<'a> {
 
 #[derive(Debug, PartialEq)]
 pub enum FrameData<'a> {
+    NetMsgStart(NetMsgData<'a>),
+    NetMsg(NetMsgData<'a>),
     DemoStart,
     ConsoleCommand(ConsoleCommandData<'a>),
     ClientData(ClientDataData),
@@ -121,7 +123,6 @@ pub enum FrameData<'a> {
     WeaponAnim(WeaponAnimData),
     Sound(SoundData<'a>),
     DemoBuffer(DemoBufferData<'a>),
-    NetMsg(NetMsgData<'a>),
 }
 
 #[derive(Debug, PartialEq, Eq)]

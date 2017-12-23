@@ -212,7 +212,7 @@ fn check_msg_length(length: i32) -> IResult<i32, i32, Error> {
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-named!(pub net_msg_data<&[u8], FrameData, Error>,
+named!(pub net_msg_data_inner<&[u8], NetMsgData, Error>,
     do_parse!(
         info:                           fix_error!(Error, net_msg_info)                        >>
         incoming_sequence:              fix_error!(Error, le_i32)                              >>
@@ -227,19 +227,27 @@ named!(pub net_msg_data<&[u8], FrameData, Error>,
         msg_length:                     flat_map!(fix_error!(Error, le_i32), check_msg_length) >>
         msg:                            fix_error!(Error, take!(msg_length))                   >>
         (
-            FrameData::NetMsg(
-                NetMsgData {
-                    info,
-                    incoming_sequence,
-                    incoming_acknowledged,
-                    incoming_reliable_acknowledged,
-                    incoming_reliable_sequence,
-                    outgoing_sequence,
-                    reliable_sequence,
-                    last_reliable_sequence,
-                    msg,
-                }
-            )
+            NetMsgData {
+                info,
+                incoming_sequence,
+                incoming_acknowledged,
+                incoming_reliable_acknowledged,
+                incoming_reliable_sequence,
+                outgoing_sequence,
+                reliable_sequence,
+                last_reliable_sequence,
+                msg,
+            }
         )
     )
+);
+
+#[cfg_attr(rustfmt, rustfmt_skip)]
+named!(pub net_msg_data<&[u8], FrameData, Error>,
+    map!(net_msg_data_inner, FrameData::NetMsg)
+);
+
+#[cfg_attr(rustfmt, rustfmt_skip)]
+named!(pub net_msg_start_data<&[u8], FrameData, Error>,
+    map!(net_msg_data_inner, FrameData::NetMsgStart)
 );

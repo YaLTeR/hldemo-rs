@@ -21,9 +21,13 @@ use self::netmsg::*;
 use self::sound::*;
 use self::weapon_anim::*;
 
+pub const MAX_FRAME_TYPE: u8 = 9;
+
 /// An enum containing the possible frame types.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FrameType {
+    NetMsgStart,
+    NetMsg,
     DemoStart,
     ConsoleCommand,
     ClientData,
@@ -32,23 +36,6 @@ pub enum FrameType {
     WeaponAnim,
     Sound,
     DemoBuffer,
-    NetMsg,
-}
-
-impl From<u8> for FrameType {
-    fn from(x: u8) -> Self {
-        match x {
-            2 => FrameType::DemoStart,
-            3 => FrameType::ConsoleCommand,
-            4 => FrameType::ClientData,
-            5 => FrameType::NextSection,
-            6 => FrameType::Event,
-            7 => FrameType::WeaponAnim,
-            8 => FrameType::Sound,
-            9 => FrameType::DemoBuffer,
-            _ => FrameType::NetMsg,
-        }
-    }
 }
 
 /// A demo frame header.
@@ -60,12 +47,35 @@ pub struct FrameHeader {
     pub frame: i32,
 }
 
+#[inline]
+fn parse_frame_type(frame_type: u8) -> IResult<FrameType, FrameType, Error> {
+    if frame_type > MAX_FRAME_TYPE {
+        IResult::Error(error_code!(ErrorKind::Custom(Error::InvalidFrameType(frame_type))))
+    } else {
+        let frame_type = match frame_type {
+            0 => FrameType::NetMsgStart,
+            1 => FrameType::NetMsg,
+            2 => FrameType::DemoStart,
+            3 => FrameType::ConsoleCommand,
+            4 => FrameType::ClientData,
+            5 => FrameType::NextSection,
+            6 => FrameType::Event,
+            7 => FrameType::WeaponAnim,
+            8 => FrameType::Sound,
+            9 => FrameType::DemoBuffer,
+            _ => unreachable!()
+        };
+
+        IResult::Done(frame_type, frame_type)
+    }
+}
+
 #[cfg_attr(rustfmt, rustfmt_skip)]
-named!(pub frame_header<FrameHeader>,
+named!(pub frame_header<&[u8], FrameHeader, Error>,
     do_parse!(
-        frame_type: map!(be_u8, From::from) >>
-        time:       le_f32                  >>
-        frame:      le_i32                  >>
+        frame_type: flat_map!(fix_error!(Error, be_u8), parse_frame_type) >>
+        time:       fix_error!(Error, le_f32)                             >>
+        frame:      fix_error!(Error, le_i32)                             >>
         (
             FrameHeader {
                 frame_type,
@@ -77,7 +87,7 @@ named!(pub frame_header<FrameHeader>,
 );
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-named!(pub frame_next_section<Frame>,
+named!(pub frame_next_section<&[u8], Frame, Error>,
     map_res!(frame_header, |FrameHeader { frame_type, time, frame }| {
         if frame_type == FrameType::NextSection {
             Ok(Frame {
@@ -94,6 +104,8 @@ named!(pub frame_next_section<Frame>,
 #[inline]
 pub fn frame_data(input: &[u8], frame_type: FrameType) -> IResult<&[u8], FrameData, Error> {
     match frame_type {
+        FrameType::NetMsgStart => net_msg_start_data(input),
+        FrameType::NetMsg => net_msg_data(input),
         FrameType::DemoStart => IResult::Done(input, FrameData::DemoStart),
         FrameType::ConsoleCommand => fix_error!(input, Error, console_command_data),
         FrameType::ClientData => fix_error!(input, Error, client_data_data),
@@ -102,14 +114,13 @@ pub fn frame_data(input: &[u8], frame_type: FrameType) -> IResult<&[u8], FrameDa
         FrameType::WeaponAnim => fix_error!(input, Error, weapon_anim_data),
         FrameType::Sound => fix_error!(input, Error, sound_data),
         FrameType::DemoBuffer => fix_error!(input, Error, demo_buffer_data),
-        FrameType::NetMsg => net_msg_data(input),
     }
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 named!(pub frame<&[u8], Frame, Error>,
     do_parse!(
-        frame_header: fix_error!(Error, frame_header)            >>
+        frame_header: frame_header                               >>
         data:         call!(frame_data, frame_header.frame_type) >>
         (
             Frame {

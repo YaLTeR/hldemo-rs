@@ -38,6 +38,11 @@ quick_error! {
                     directory::MIN_ENTRY_COUNT,
                     directory::MAX_ENTRY_COUNT)
         }
+        InvalidFrameType(frame_type: u8) {
+            display("invalid frame type: {} (expected from 0 to {})",
+                    frame_type,
+                    frame::MAX_FRAME_TYPE)
+        }
         InvalidNetMsgLength(length: i32) {
             display("invalid netmsg length: {} (expected from {} to {})",
                     length,
