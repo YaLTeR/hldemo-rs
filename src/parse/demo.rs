@@ -1,6 +1,6 @@
-use super::*;
 use super::directory::*;
 use super::header::*;
+use super::*;
 use types::*;
 
 /// Parses a demo.

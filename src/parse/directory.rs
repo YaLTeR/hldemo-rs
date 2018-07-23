@@ -2,8 +2,8 @@
 
 use nom::*;
 
-use super::*;
 use super::frame::*;
+use super::*;
 use types::*;
 
 pub const MIN_ENTRY_COUNT: i32 = 1;

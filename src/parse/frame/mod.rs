@@ -5,8 +5,8 @@ use nom::*;
 use super::*;
 use types::*;
 
-pub mod console_command;
 pub mod client_data;
+pub mod console_command;
 pub mod demo_buffer;
 pub mod event;
 pub mod netmsg;
@@ -63,7 +63,7 @@ fn parse_frame_type(frame_type: u8) -> IResult<FrameType, FrameType, Error> {
             7 => FrameType::WeaponAnim,
             8 => FrameType::Sound,
             9 => FrameType::DemoBuffer,
-            _ => unreachable!()
+            _ => unreachable!(),
         };
 
         IResult::Done(frame_type, frame_type)
