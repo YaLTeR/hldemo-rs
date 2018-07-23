@@ -16,11 +16,11 @@ travis-ci = { repository = "YaLTeR/hldemo-rs" }
 appveyor = { repository = "YaLTeR/hldemo-rs" }
 
 [dependencies]
-error-chain = "0.11"
+error-chain = "0.12"
 quick-error = "1"
 
 [dependencies.nom]
-version = "3.2"
+version = "3"
 features = ["verbose-errors"]
 
 [dev-dependencies]
