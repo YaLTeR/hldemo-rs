@@ -15,17 +15,17 @@ named!(pub magic<&[u8], (), Error>,
 );
 
 #[inline]
-fn check_demo_protocol(protocol: i32) -> IResult<i32, i32, Error> {
+fn check_demo_protocol(protocol: i32) -> Result<i32, Error> {
     if protocol == SUPPORTED_DEMO_PROTOCOL {
-        IResult::Done(protocol, protocol)
+        Ok(protocol)
     } else {
-        IResult::Error(error_code!(ErrorKind::Custom(Error::InvalidDemoProtocol(protocol))))
+        Err(Error::InvalidDemoProtocol(protocol))
     }
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 named!(pub demo_protocol<&[u8], i32, Error>,
-    flat_map!(fix_error!(Error, le_i32), check_demo_protocol)
+    map_res_err_!(fix_error!(Error, le_i32), check_demo_protocol)
 );
 
 #[cfg_attr(rustfmt, rustfmt_skip)]

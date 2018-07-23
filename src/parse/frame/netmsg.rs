@@ -203,29 +203,29 @@ named!(net_msg_info<NetMsgInfo>,
 );
 
 #[inline]
-fn check_msg_length(length: i32) -> IResult<i32, i32, Error> {
+fn check_msg_length(length: i32) -> Result<i32, Error> {
     if length < MIN_MESSAGE_LENGTH || length > MAX_MESSAGE_LENGTH {
-        IResult::Error(error_code!(ErrorKind::Custom(Error::InvalidNetMsgLength(length))))
+        Err(Error::InvalidNetMsgLength(length))
     } else {
-        IResult::Done(length, length)
+        Ok(length)
     }
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 named!(pub net_msg_data_inner<&[u8], NetMsgData, Error>,
     do_parse!(
-        info:                           fix_error!(Error, net_msg_info)                        >>
-        incoming_sequence:              fix_error!(Error, le_i32)                              >>
-        incoming_acknowledged:          fix_error!(Error, le_i32)                              >>
-        incoming_reliable_acknowledged: fix_error!(Error, le_i32)                              >>
-        incoming_reliable_sequence:     fix_error!(Error, le_i32)                              >>
-        outgoing_sequence:              fix_error!(Error, le_i32)                              >>
-        reliable_sequence:              fix_error!(Error, le_i32)                              >>
-        last_reliable_sequence:         fix_error!(Error, le_i32)                              >>
+        info:                           fix_error!(Error, net_msg_info)                            >>
+        incoming_sequence:              fix_error!(Error, le_i32)                                  >>
+        incoming_acknowledged:          fix_error!(Error, le_i32)                                  >>
+        incoming_reliable_acknowledged: fix_error!(Error, le_i32)                                  >>
+        incoming_reliable_sequence:     fix_error!(Error, le_i32)                                  >>
+        outgoing_sequence:              fix_error!(Error, le_i32)                                  >>
+        reliable_sequence:              fix_error!(Error, le_i32)                                  >>
+        last_reliable_sequence:         fix_error!(Error, le_i32)                                  >>
 
         // Can't use length_bytes!() here because it doesn't work with custom error types.
-        msg_length:                     flat_map!(fix_error!(Error, le_i32), check_msg_length) >>
-        msg:                            fix_error!(Error, take!(msg_length))                   >>
+        msg_length:                     map_res_err_!(fix_error!(Error, le_i32), check_msg_length) >>
+        msg:                            fix_error!(Error, take!(msg_length))                       >>
         (
             NetMsgData {
                 info,

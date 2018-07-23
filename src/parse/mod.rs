@@ -52,6 +52,14 @@ quick_error! {
     }
 }
 
+// Required by nom.
+impl From<u32> for Error {
+    fn from(_: u32) -> Self {
+        // We aren't using this.
+        unreachable!()
+    }
+}
+
 #[cfg_attr(rustfmt, rustfmt_skip)]
 named!(xyz<[f32; 3]>,
     do_parse!(

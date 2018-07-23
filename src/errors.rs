@@ -1,6 +1,6 @@
 //! An error type wrapping nom's parsing errors and some glue between the two.
 
-use nom::{self, error_to_list, IError, IResult, Needed};
+use nom::{self, Context, Needed};
 
 use parse;
 
@@ -18,16 +18,20 @@ error_chain! {
     }
 }
 
-impl<I> From<nom::Err<I, parse::Error>> for Error {
-    fn from(err: nom::Err<I, parse::Error>) -> Self {
-        let v = error_to_list(&err);
-        let mut iter = v.into_iter().rev().filter_map(|x| {
-                                                          if let nom::ErrorKind::Custom(inner) = x {
-                                                              Some(inner)
-                                                          } else {
-                                                              None
-                                                          }
-                                                      });
+impl<I> From<Context<I, parse::Error>> for Error {
+    fn from(err: Context<I, parse::Error>) -> Self {
+        let v = match err {
+            Context::Code(i, kind) => vec![(i, kind)],
+            Context::List(vec) => vec,
+        };
+
+        let mut iter = v.into_iter().filter_map(|(_, x)| {
+                                                    if let nom::ErrorKind::Custom(inner) = x {
+                                                        Some(inner)
+                                                    } else {
+                                                        None
+                                                    }
+                                                });
 
         let mut err = Error::from(iter.next().unwrap());
         for parse_error in iter {
@@ -38,24 +42,14 @@ impl<I> From<nom::Err<I, parse::Error>> for Error {
     }
 }
 
-impl<I> From<IError<I, parse::Error>> for Error {
-    fn from(err: IError<I, parse::Error>) -> Self {
+impl<I> From<nom::Err<I, parse::Error>> for Error {
+    fn from(err: nom::Err<I, parse::Error>) -> Self {
         match err {
-            IError::Incomplete(Needed::Size(count)) => ErrorKind::NeedMoreBytes(Some(count)).into(),
-            IError::Incomplete(Needed::Unknown) => ErrorKind::NeedMoreBytes(None).into(),
-            IError::Error(err) => err.into(),
+            nom::Err::Incomplete(Needed::Size(count)) => {
+                ErrorKind::NeedMoreBytes(Some(count)).into()
+            }
+            nom::Err::Incomplete(Needed::Unknown) => ErrorKind::NeedMoreBytes(None).into(),
+            nom::Err::Error(err) | nom::Err::Failure(err) => err.into(),
         }
     }
-}
-
-/// Converts `nom::IResult<I, O, parse::Error>` into a `Result<O>`, preserving the parse error
-/// chain.
-///
-/// # Panics
-///
-/// Panics if `result` is an `IError` and there's no `nom::ErrorKind::Custom(parse::Error)` in its
-/// error chain.
-// Can't have this as a From due to orphan rules.
-pub fn iresult_into_result<I, O>(result: IResult<I, O, parse::Error>) -> Result<O> {
-    result.to_full_result().map_err(|err| err.into())
 }

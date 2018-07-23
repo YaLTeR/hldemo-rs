@@ -37,11 +37,11 @@ named!(pub entry<DirectoryEntry>,
 );
 
 #[inline]
-fn check_count(count: i32) -> IResult<usize, usize, Error> {
+fn check_count(count: i32) -> Result<usize, Error> {
     if count < MIN_ENTRY_COUNT || count > MAX_ENTRY_COUNT {
-        IResult::Error(error_code!(ErrorKind::Custom(Error::InvalidDirectoryEntryCount(count))))
+        Err(Error::InvalidDirectoryEntryCount(count))
     } else {
-        IResult::Done(count as usize, count as usize)
+        Ok(count as usize)
     }
 }
 
@@ -50,8 +50,8 @@ named!(pub directory<&[u8], Directory, Error>,
     add_parse_error!(Directory,
         do_parse!(
             // Can't use length_count!() here because it doesn't work with custom error types.
-            length:  flat_map!(fix_error!(Error, le_i32), check_count) >>
-            entries: fix_error!(Error, count!(entry, length as usize)) >>
+            length:  map_res_err_!(fix_error!(Error, le_i32), check_count) >>
+            entries: fix_error!(Error, count!(entry, length as usize))     >>
             (
                 Directory {
                     entries
@@ -76,15 +76,15 @@ pub fn offset_directory_with_frames(input: &[u8],
                                     offset: usize)
                                     -> IResult<&[u8], Directory, Error> {
     match offset_directory(input, offset) {
-        IResult::Done(_, mut directory) => {
+        Ok((_, mut directory)) => {
             for entry in &mut directory.entries {
                 entry.frames = match offset_frames(input, entry.offset as usize) {
-                    IResult::Done(_, frames) => frames,
+                    Ok((_, frames)) => frames,
                     other => return other.map(|_| unreachable!()),
                 };
             }
 
-            IResult::Done(input, directory)
+            Ok((input, directory))
         }
         other => other,
     }

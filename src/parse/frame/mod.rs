@@ -48,9 +48,9 @@ pub struct FrameHeader {
 }
 
 #[inline]
-fn parse_frame_type(frame_type: u8) -> IResult<FrameType, FrameType, Error> {
+fn parse_frame_type(frame_type: u8) -> Result<FrameType, Error> {
     if frame_type > MAX_FRAME_TYPE {
-        IResult::Error(error_code!(ErrorKind::Custom(Error::InvalidFrameType(frame_type))))
+        Err(Error::InvalidFrameType(frame_type))
     } else {
         let frame_type = match frame_type {
             0 => FrameType::NetMsgStart,
@@ -66,16 +66,16 @@ fn parse_frame_type(frame_type: u8) -> IResult<FrameType, FrameType, Error> {
             _ => unreachable!(),
         };
 
-        IResult::Done(frame_type, frame_type)
+        Ok(frame_type)
     }
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 named!(pub frame_header<&[u8], FrameHeader, Error>,
     do_parse!(
-        frame_type: flat_map!(fix_error!(Error, be_u8), parse_frame_type) >>
-        time:       fix_error!(Error, le_f32)                             >>
-        frame:      fix_error!(Error, le_i32)                             >>
+        frame_type: map_res_err_!(fix_error!(Error, be_u8), parse_frame_type) >>
+        time:       fix_error!(Error, le_f32)                                 >>
+        frame:      fix_error!(Error, le_i32)                                 >>
         (
             FrameHeader {
                 frame_type,
@@ -106,10 +106,10 @@ pub fn frame_data(input: &[u8], frame_type: FrameType) -> IResult<&[u8], FrameDa
     match frame_type {
         FrameType::NetMsgStart => net_msg_start_data(input),
         FrameType::NetMsg => net_msg_data(input),
-        FrameType::DemoStart => IResult::Done(input, FrameData::DemoStart),
+        FrameType::DemoStart => Ok((input, FrameData::DemoStart)),
         FrameType::ConsoleCommand => fix_error!(input, Error, console_command_data),
         FrameType::ClientData => fix_error!(input, Error, client_data_data),
-        FrameType::NextSection => IResult::Done(input, FrameData::NextSection),
+        FrameType::NextSection => Ok((input, FrameData::NextSection)),
         FrameType::Event => fix_error!(input, Error, event_data),
         FrameType::WeaponAnim => fix_error!(input, Error, weapon_anim_data),
         FrameType::Sound => fix_error!(input, Error, sound_data),

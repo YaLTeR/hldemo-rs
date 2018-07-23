@@ -38,7 +38,7 @@ impl<'a> Demo<'a> {
     /// # }
     /// ```
     pub fn parse(input: &[u8]) -> Result<Demo> {
-        iresult_into_result(parse::demo(input))
+        parse::demo(input).map(|(_, demo)| demo).map_err(Into::into)
     }
 
     /// Parses a demo's header and directory, without parsing frame data.
@@ -71,7 +71,8 @@ impl<'a> Demo<'a> {
     /// # }
     /// ```
     pub fn parse_without_frames(input: &[u8]) -> Result<Demo> {
-        iresult_into_result(parse::demo_without_frames(input))
+        parse::demo_without_frames(input).map(|(_, demo)| demo)
+                                         .map_err(Into::into)
     }
 }
 
