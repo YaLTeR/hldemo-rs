@@ -26,8 +26,7 @@ pub const MAX_FRAME_TYPE: u8 = 9;
 /// An enum containing the possible frame types.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FrameType {
-    NetMsgStart,
-    NetMsg,
+    NetMsg(u8),
     DemoStart,
     ConsoleCommand,
     ClientData,
@@ -53,8 +52,6 @@ fn parse_frame_type(frame_type: u8) -> Result<FrameType, Error> {
         Err(Error::InvalidFrameType(frame_type))
     } else {
         let frame_type = match frame_type {
-            0 => FrameType::NetMsgStart,
-            1 => FrameType::NetMsg,
             2 => FrameType::DemoStart,
             3 => FrameType::ConsoleCommand,
             4 => FrameType::ClientData,
@@ -63,7 +60,7 @@ fn parse_frame_type(frame_type: u8) -> Result<FrameType, Error> {
             7 => FrameType::WeaponAnim,
             8 => FrameType::Sound,
             9 => FrameType::DemoBuffer,
-            _ => unreachable!(),
+            x => FrameType::NetMsg(x),
         };
 
         Ok(frame_type)
@@ -104,8 +101,11 @@ named!(pub frame_next_section<&[u8], Frame, Error>,
 #[inline]
 pub fn frame_data(input: &[u8], frame_type: FrameType) -> IResult<&[u8], FrameData, Error> {
     match frame_type {
-        FrameType::NetMsgStart => net_msg_start_data(input),
-        FrameType::NetMsg => net_msg_data(input),
+        FrameType::NetMsg(x) => net_msg_data(input).map(|(i, o)| {
+                                                       (i,
+                                        FrameData::NetMsg((NetMsgFrameType::from_raw(x).unwrap(),
+                                                           o)))
+                                                   }),
         FrameType::DemoStart => Ok((input, FrameData::DemoStart)),
         FrameType::ConsoleCommand => fix_error!(input, Error, console_command_data),
         FrameType::ClientData => fix_error!(input, Error, client_data_data),

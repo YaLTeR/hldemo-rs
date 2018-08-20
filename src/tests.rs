@@ -74,12 +74,12 @@ fn frame_types() {
     let demo = Demo::parse(bytes).unwrap();
     let frames = &demo.directory.entries[0].frames;
 
-    assert!(if let FrameData::NetMsgStart(_) = frames[0].data {
+    assert!(if let FrameData::NetMsg((NetMsgFrameType::Start, _)) = frames[0].data {
                 true
             } else {
                 false
             });
-    assert!(if let FrameData::NetMsg(_) = frames[1].data {
+    assert!(if let FrameData::NetMsg((NetMsgFrameType::Normal, _)) = frames[1].data {
                 true
             } else {
                 false

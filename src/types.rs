@@ -114,8 +114,7 @@ pub struct Frame<'a> {
 
 #[derive(Debug, PartialEq)]
 pub enum FrameData<'a> {
-    NetMsgStart(NetMsgData<'a>),
-    NetMsg(NetMsgData<'a>),
+    NetMsg((NetMsgFrameType, NetMsgData<'a>)),
     DemoStart,
     ConsoleCommand(ConsoleCommandData<'a>),
     ClientData(ClientDataData),
@@ -182,6 +181,16 @@ pub struct SoundData<'a> {
 #[derive(Debug, PartialEq, Eq)]
 pub struct DemoBufferData<'a> {
     pub buffer: &'a [u8],
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum NetMsgFrameType {
+    /// Initialization frames.
+    Start,
+    /// Normal frames.
+    Normal,
+    /// Never emitted by the official engine but parsed as NetMsg nevertheless.
+    Unknown(u8),
 }
 
 #[derive(Debug, PartialEq)]
@@ -288,4 +297,19 @@ pub struct MoveVars<'a> {
     pub skyvec_x: f32,
     pub skyvec_y: f32,
     pub skyvec_z: f32,
+}
+
+impl NetMsgFrameType {
+    /// Converts a raw frame type into a `NetMsgFrameType`.
+    ///
+    /// Returns `None` if the given frame type isn't a valid NetMsg frame type.
+    #[inline]
+    pub(crate) fn from_raw(frame_type: u8) -> Option<Self> {
+        match frame_type {
+            0 => Some(NetMsgFrameType::Start),
+            1 => Some(NetMsgFrameType::Normal),
+            2...9 => None,
+            x => Some(NetMsgFrameType::Unknown(x)),
+        }
+    }
 }

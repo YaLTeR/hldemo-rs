@@ -50,8 +50,9 @@ fn print_frame(frame: &hldemo::Frame) {
 
 fn frame_type_string(data: &hldemo::FrameData) -> &'static str {
     match *data {
-        hldemo::FrameData::NetMsgStart(_) => "NetMsgStart",
-        hldemo::FrameData::NetMsg(_) => "NetMsg",
+        hldemo::FrameData::NetMsg((hldemo::NetMsgFrameType::Start, _)) => "NetMsg Start",
+        hldemo::FrameData::NetMsg((hldemo::NetMsgFrameType::Normal, _)) => "NetMsg",
+        hldemo::FrameData::NetMsg((hldemo::NetMsgFrameType::Unknown(_), _)) => "NetMsg Unknown",
         hldemo::FrameData::DemoStart => "DemoStart",
         hldemo::FrameData::ConsoleCommand(_) => "ConsoleCommand",
         hldemo::FrameData::ClientData(_) => "ClientData",
@@ -70,9 +71,7 @@ fn frame_extra_info(data: &hldemo::FrameData) -> String {
                     String::from_utf8_lossy(d.command.split(|&x| x == 0).next().unwrap()))
         }
         hldemo::FrameData::DemoBuffer(ref d) => format!(" size={}", d.buffer.len()),
-        hldemo::FrameData::NetMsgStart(ref d) | hldemo::FrameData::NetMsg(ref d) => {
-            format!(" size={}", d.msg.len())
-        }
+        hldemo::FrameData::NetMsg((_, ref d)) => format!(" size={}", d.msg.len()),
         _ => "".to_string(),
     }
 }

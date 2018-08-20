@@ -212,7 +212,7 @@ fn check_msg_length(length: i32) -> Result<i32, Error> {
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-named!(pub net_msg_data_inner<&[u8], NetMsgData, Error>,
+named!(pub net_msg_data<&[u8], NetMsgData, Error>,
     do_parse!(
         info:                           fix_error!(Error, net_msg_info)                            >>
         incoming_sequence:              fix_error!(Error, le_i32)                                  >>
@@ -240,14 +240,4 @@ named!(pub net_msg_data_inner<&[u8], NetMsgData, Error>,
             }
         )
     )
-);
-
-#[cfg_attr(rustfmt, rustfmt_skip)]
-named!(pub net_msg_data<&[u8], FrameData, Error>,
-    map!(net_msg_data_inner, FrameData::NetMsg)
-);
-
-#[cfg_attr(rustfmt, rustfmt_skip)]
-named!(pub net_msg_start_data<&[u8], FrameData, Error>,
-    map!(net_msg_data_inner, FrameData::NetMsgStart)
 );
