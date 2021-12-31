@@ -82,7 +82,7 @@ pub struct Header<'a> {
     pub net_protocol: i32,
     pub map_name: &'a [u8],
     pub game_dir: &'a [u8],
-    pub map_crc: i32,
+    pub map_crc: u32,
     pub directory_offset: i32,
 }
 
