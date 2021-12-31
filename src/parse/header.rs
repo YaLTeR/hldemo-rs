@@ -37,7 +37,7 @@ named!(pub header<&[u8], Header, Error>,
             net_protocol:     fix_error!(Error, le_i32)     >>
             map_name:         fix_error!(Error, take!(260)) >>
             game_dir:         fix_error!(Error, take!(260)) >>
-            map_crc:          fix_error!(Error, le_i32)     >>
+            map_crc:          fix_error!(Error, le_u32)     >>
             directory_offset: fix_error!(Error, le_i32)     >>
             (
                 Header {
