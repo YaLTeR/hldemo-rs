@@ -8,7 +8,7 @@ use std::env;
 use std::fs::File;
 
 mod errors {
-    error_chain!{}
+    error_chain! {}
 }
 use errors::*;
 
@@ -36,7 +36,7 @@ fn print_frames(demo: &hldemo::Demo) {
             print_frame(frame);
         }
 
-        println!("");
+        println!();
     }
 }
 
