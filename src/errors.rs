@@ -26,12 +26,12 @@ impl<I> From<Context<I, parse::Error>> for Error {
         };
 
         let mut iter = v.into_iter().filter_map(|(_, x)| {
-                                                    if let nom::ErrorKind::Custom(inner) = x {
-                                                        Some(inner)
-                                                    } else {
-                                                        None
-                                                    }
-                                                });
+                                        if let nom::ErrorKind::Custom(inner) = x {
+                                            Some(inner)
+                                        } else {
+                                            None
+                                        }
+                                    });
 
         let mut err = Error::from(iter.next().unwrap());
         for parse_error in iter {

@@ -8,7 +8,7 @@ use std::env;
 use std::fs::File;
 
 mod errors {
-    error_chain!{}
+    error_chain! {}
 }
 use errors::*;
 
@@ -32,7 +32,7 @@ fn run() -> Result<()> {
 
 fn print_demo(demo: &hldemo::Demo) {
     print_header(&demo.header);
-    println!("");
+    println!();
     print_directory(&demo.directory);
 }
 
